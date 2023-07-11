@@ -18,9 +18,10 @@ namespace SqlAnalysis.Services
             return storedProcedureNames;
         }
 
-        public List<string >TableNames(string sqlToParse)
+        public List<string> TableNames(string sqlToParse)
         {
-            var tableNames = GetQuotedIdentifierFromTokenTypes(sqlToParse, new[] { TSqlTokenType.From, TSqlTokenType.Join, TSqlTokenType.Into, TSqlTokenType.Update});
+            var tableNames = GetQuotedIdentifierFromTokenTypes(sqlToParse,
+                new[] { TSqlTokenType.From, TSqlTokenType.Join, TSqlTokenType.Into, TSqlTokenType.Update });
 
             return tableNames;
         }
