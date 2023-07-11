@@ -8,7 +8,7 @@ namespace SqlAnalysis.Features.Profiler
 {
     public class ProfilerVerb
     {
-        private const string _connectionStringEnvironmentVariable = "SQL_PROFILE_DB";
+        private const string ConnectionStringEnvironmentVariable = "SQL_PROFILE_DB";
         private readonly ILogger<ProfilerVerb> _logger;
 
         public ProfilerVerb(ILogger<ProfilerVerb> logger)
@@ -32,22 +32,10 @@ namespace SqlAnalysis.Features.Profiler
                         continue;
                     }
 
-                    var tableNames = new List<string>();
-                    var sqlToParse = GetSqlToParse(row);
 
-                    tableNames = tableNameParser.GetTableNamesFromQueryString(row.TextData);
+                    var sqlToParse = GetSqlToParseFromExecuteStmt(row);
 
-                    Console.WriteLine(row.RowNumber);
-                    Console.WriteLine(row.TextData);
-                    Console.WriteLine(sqlToParse);
-
-                    if (tableNames.Any())
-                    {
-                        Console.WriteLine();
-                        Console.WriteLine($"Table names: {string.Join(",", tableNames)}");
-                    }
-
-                    Console.WriteLine();
+                    Console.WriteLine(tableNameParser.ParsedSqlTabledNamesAsString(sqlToParse));
                 }
             }
 
@@ -57,15 +45,15 @@ namespace SqlAnalysis.Features.Profiler
             }
         }
 
-        private string GetSqlToParse(SqlProfileData row)
+        private string GetSqlToParseFromExecuteStmt(SqlProfileData row)
         {
             string sqlToParse;
-            if (row.TextData.StartsWith("exec sp_executesql", StringComparison.InvariantCultureIgnoreCase))
+            if (row.TextData!.StartsWith("exec sp_executesql", StringComparison.InvariantCultureIgnoreCase))
             {
-                var firstOffset = row.TextData.IndexOfNth("'");
-                var secondOffset = row.TextData.IndexOfNth("'", 1);
+                var c = "'";
 
-                Console.WriteLine($"Offsets: {firstOffset} - {secondOffset}");
+                var firstOffset = row.TextData.IndexOfNth(c);
+                var secondOffset = row.TextData.IndexOfNth(c, 1);
 
                 sqlToParse = row.TextData.Substring(firstOffset + 1, secondOffset - firstOffset - 1);
             }
@@ -80,7 +68,7 @@ namespace SqlAnalysis.Features.Profiler
 
         private List<SqlProfileData> GetProfileData(ProfilerOptions options)
         {
-            var connectionString = Environment.GetEnvironmentVariable(_connectionStringEnvironmentVariable);
+            var connectionString = Environment.GetEnvironmentVariable(ConnectionStringEnvironmentVariable);
 
             if (string.IsNullOrEmpty(connectionString))
             {

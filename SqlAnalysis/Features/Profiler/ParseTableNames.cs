@@ -5,7 +5,33 @@ namespace SqlAnalysis.Features.Profiler
 {
     public class ParseTableNames
     {
-        public List<string> GetTableNamesFromQueryString(string query)
+        public string ParsedSqlTabledNamesAsString(string sqlToParse)
+        {
+            var strBuilder = new StringBuilder();
+
+            var tableNames = GetTableNamesFromQueryString(sqlToParse);
+
+            strBuilder.Append($"SQL: {sqlToParse}");
+            strBuilder.AppendLine();
+            strBuilder.AppendLine();
+            if (tableNames.Any())
+            {
+                foreach (var tableName in tableNames)
+                {
+                    strBuilder.Append($"Table: {tableName}\n");
+                }
+            }
+
+            else
+            {
+                strBuilder.Append("No tables found");
+            }
+
+            return strBuilder.ToString();
+        }
+
+
+        private List<string> GetTableNamesFromQueryString(string query)
         {
             var output = new List<string>();
             var sb = new StringBuilder();
