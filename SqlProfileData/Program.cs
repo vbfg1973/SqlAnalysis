@@ -1,34 +1,85 @@
-﻿using System.Data.SqlClient;
-using Dapper;
-using SqlProfileAnalysis.Models;
+﻿using CommandLine;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Serilog;
+using SqlAnalysis.Features.Profiler;
 
-namespace SqlProfileAnalysis
+namespace SqlAnalysis
 {
     public static class Program
     {
-        private static readonly string s_connectionStringEnvironmentVariable = "SQL_PROFILE_DB";
+        private static IConfiguration? s_configuration;
+        private static IServiceCollection? s_serviceCollection;
+        private static IServiceProvider? s_serviceProvider;
 
         public static void Main(string[] args)
         {
-            var connectionString = Environment.GetEnvironmentVariable(s_connectionStringEnvironmentVariable);
+            BuildConfiguration();
+            Log.Logger = new LoggerConfiguration()
+                .ReadFrom
+                .Configuration(s_configuration!)
+                .CreateLogger();
+            ConfigureServices();
 
-            if (string.IsNullOrEmpty(connectionString))
+            ParseCommandLineOptions(args);
+        }
+
+        private static void ParseCommandLineOptions(string[] args)
+        {
+            Parser.Default
+                .ParseArguments<
+                    ProfilerOptions
+                >(args)
+                .WithParsed(options =>
+                {
+                    var verb = s_serviceProvider?.GetService<ProfilerVerb>();
+                    verb?.Run(options).Wait();
+                })
+                ;
+        }
+
+        private static void ConfigureServices()
+        {
+            s_serviceCollection = new ServiceCollection();
+
+            // var appSettings = new AppSettings();
+            // s_configuration.Bind("Settings", appSettings);
+
+            s_serviceCollection.AddLogging(configure => configure.AddSerilog());
+
+            s_serviceCollection.AddVerbs();
+
+            s_serviceProvider = s_serviceCollection.BuildServiceProvider();
+        }
+
+        private static void BuildConfiguration()
+        {
+            ConfigurationBuilder configuration = new();
+            var environmentName = GetEnvironmentName();
+
+            s_configuration = configuration.AddJsonFile("appsettings.json", true, true)
+                .AddJsonFile($"appsettings.{environmentName}.json", true, true)
+                .AddEnvironmentVariables()
+                .Build();
+        }
+
+        private static string GetEnvironmentName()
+        {
+            var environmentName = GetRawEnvironmentName();
+            return environmentName switch
             {
-                Console.Error.WriteLine(
-                    $"Connection string environment variable ({s_connectionStringEnvironmentVariable}) is not set");
-            }
+                "dev" => "development",
+                "test" => "development",
+                "uat" => "development",
+                "prod" => "production",
+                _ => "Local"
+            };
+        }
 
-            else
-            {
-                Console.WriteLine(connectionString);
-                using var connection = new SqlConnection(connectionString);
-
-                var sql = "SELECT * FROM [InsiderReportGeneration - 2023-07-11]";
-
-                var profileData = connection.Query<SqlProfileData>(sql).ToList();
-
-                Console.WriteLine(profileData.Count);
-            }
+        private static string GetRawEnvironmentName()
+        {
+            var environmentName = Environment.GetEnvironmentVariable("env") ?? "Local";
+            return environmentName.Trim().ToLower();
         }
     }
 }
