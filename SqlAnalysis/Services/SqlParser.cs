@@ -3,45 +3,34 @@ using Microsoft.SqlServer.TransactSql.ScriptDom;
 
 namespace SqlAnalysis.Services
 {
-    public class ParseTableNames
+    public interface ISqlParser
     {
-        public string ParsedSqlTabledNamesAsString(string sqlToParse)
+        List<string> StoredProcedureNames(string sqlToParse);
+        List<string> TableNames(string sqlToParse);
+    }
+
+    public class SqlParser : ISqlParser
+    {
+        public List<string> StoredProcedureNames(string sqlToParse)
         {
-            var strBuilder = new StringBuilder();
+            var storedProcedureNames = GetQuotedIdentifierFromTokenTypes(sqlToParse, new[] { TSqlTokenType.Exec });
 
-            var tableNames = GetTableNamesFromQueryString(sqlToParse);
+            return storedProcedureNames;
+        }
 
-            strBuilder.Append($"SQL: {sqlToParse}");
-            strBuilder.AppendLine();
-            strBuilder.AppendLine();
-            if (tableNames.Any())
-            {
-                foreach (var tableName in tableNames)
-                {
-                    strBuilder.Append($"Table: {tableName}\n");
-                }
-            }
+        public List<string >TableNames(string sqlToParse)
+        {
+            var tableNames = GetQuotedIdentifierFromTokenTypes(sqlToParse, new[] { TSqlTokenType.From, TSqlTokenType.Join, TSqlTokenType.Into, TSqlTokenType.Update});
 
-            else
-            {
-                strBuilder.Append("No tables found");
-            }
-
-            return strBuilder.ToString();
+            return tableNames;
         }
 
 
-        private List<string> GetTableNamesFromQueryString(string query)
+        private List<string> GetQuotedIdentifierFromTokenTypes(string query, TSqlTokenType[] fromTokenTypes)
         {
             var output = new List<string>();
             var sb = new StringBuilder();
             var parser = new TSql150Parser(true, SqlEngineType.All);
-
-            var fromTokenTypes = new[]
-            {
-                TSqlTokenType.From,
-                TSqlTokenType.Join
-            };
 
             var identifierTokenTypes = new[]
             {

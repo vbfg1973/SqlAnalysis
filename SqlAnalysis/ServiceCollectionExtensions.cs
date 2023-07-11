@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using SqlAnalysis.Features.Profiler;
+using SqlAnalysis.Services;
 
 namespace SqlAnalysis
 {
@@ -9,6 +10,13 @@ namespace SqlAnalysis
         {
             serviceCollection?
                 .AddTransient<ProfilerVerb>()
+                ;
+        }
+        
+        public static void AddSqlParsingTools(this IServiceCollection? serviceCollection)
+        {
+            serviceCollection?
+                .AddTransient<ISqlParser, SqlParser>()
                 ;
         }
     }

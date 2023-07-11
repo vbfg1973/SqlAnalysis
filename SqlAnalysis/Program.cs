@@ -47,6 +47,7 @@ namespace SqlAnalysis
 
             s_serviceCollection.AddLogging(configure => configure.AddSerilog());
 
+            s_serviceCollection.AddSqlParsingTools();
             s_serviceCollection.AddVerbs();
 
             s_serviceProvider = s_serviceCollection.BuildServiceProvider();
