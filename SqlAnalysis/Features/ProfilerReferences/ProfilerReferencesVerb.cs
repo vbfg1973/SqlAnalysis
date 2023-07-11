@@ -1,11 +1,11 @@
 ﻿using System.Data.SqlClient;
 using Dapper;
 using Microsoft.Extensions.Logging;
-using SqlAnalysis.Features.Profiler.Models;
+using SqlAnalysis.Features.ProfilerReferences.Models;
 using SqlAnalysis.Helpers;
 using SqlAnalysis.Services;
 
-namespace SqlAnalysis.Features.Profiler
+namespace SqlAnalysis.Features.ProfilerReferences
 {
     public class ProfilerReferencesVerb
     {

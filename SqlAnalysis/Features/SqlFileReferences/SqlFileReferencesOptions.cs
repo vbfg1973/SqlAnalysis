@@ -1,6 +1,6 @@
 ﻿using CommandLine;
 
-namespace SqlAnalysis.Features.RawSql
+namespace SqlAnalysis.Features.SqlFileReferences
 {
     [Verb("SqlFileReferences", HelpText = "Extracts tables and stored procedures referred to by a SQL file")]
     public class SqlFileReferencesOptions

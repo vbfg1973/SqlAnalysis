@@ -2,7 +2,7 @@
 using SqlAnalysis.Helpers;
 using SqlAnalysis.Services;
 
-namespace SqlAnalysis.Features.RawSql
+namespace SqlAnalysis.Features.SqlFileReferences
 {
     public class SqlFileReferencesVerb
     {

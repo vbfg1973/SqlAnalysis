@@ -1,6 +1,6 @@
 ﻿using CommandLine;
 
-namespace SqlAnalysis.Features.Profiler
+namespace SqlAnalysis.Features.ProfilerReferences
 {
     [Verb("ProfilerReferences", HelpText = "Read profiler data from database")]
     public class ProfilerReferencesOptions
