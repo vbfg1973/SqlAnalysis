@@ -11,8 +11,8 @@ namespace SqlAnalysis.Features.Profiler
     public class ProfilerVerb
     {
         private const string ConnectionStringEnvironmentVariable = "SQL_PROFILE_DB";
-        private readonly ISqlParser _sqlParser;
         private readonly ILogger<ProfilerVerb> _logger;
+        private readonly ISqlParser _sqlParser;
 
         public ProfilerVerb(ISqlParser sqlParser, ILogger<ProfilerVerb> logger)
         {
@@ -34,8 +34,7 @@ namespace SqlAnalysis.Features.Profiler
                         continue;
                     }
 
-
-                    var sqlToParse = GetSqlToParseFromExecuteStmt(row);
+                    var sqlToParse = GetSqlToParse(row);
 
                     var tableNames = _sqlParser.TableNames(sqlToParse);
                     if (tableNames.Any())
@@ -57,7 +56,7 @@ namespace SqlAnalysis.Features.Profiler
             }
         }
 
-        private string NamesToString(string sqlToParse, List<string> names, string prefix = "Unknown Prefix")
+        private static string NamesToString(string sqlToParse, List<string> names, string prefix = "Unknown Prefix")
         {
             var strBuilder = new StringBuilder();
 
@@ -77,7 +76,12 @@ namespace SqlAnalysis.Features.Profiler
             return strBuilder.ToString();
         }
 
-        private string GetSqlToParseFromExecuteStmt(SqlProfileData row)
+        /// <summary>
+        ///     Extracts sql to parse. Likely just returns the original string but in the case of an sp_executesql stored procedure call (NHibernate and the like) will extract the query
+        /// </summary>
+        /// <param name="row"></param>
+        /// <returns></returns>
+        private static string GetSqlToParse(SqlProfileData row)
         {
             string sqlToParse;
             if (row.TextData!.StartsWith("exec sp_executesql", StringComparison.InvariantCultureIgnoreCase))
@@ -98,6 +102,11 @@ namespace SqlAnalysis.Features.Profiler
             return sqlToParse;
         }
 
+        /// <summary>
+        ///     Pulls the sql profiler data back from a database table
+        /// </summary>
+        /// <param name="options"></param>
+        /// <returns></returns>
         private List<SqlProfileData> GetProfileData(ProfilerOptions options)
         {
             var connectionString = Environment.GetEnvironmentVariable(ConnectionStringEnvironmentVariable);
