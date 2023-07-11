@@ -1,7 +1,7 @@
 ﻿using System.Text;
 using Microsoft.SqlServer.TransactSql.ScriptDom;
 
-namespace SqlAnalysis.Features.Profiler
+namespace SqlAnalysis.Services
 {
     public class ParseTableNames
     {
