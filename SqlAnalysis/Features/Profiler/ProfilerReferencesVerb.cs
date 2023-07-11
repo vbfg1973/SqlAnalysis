@@ -1,5 +1,4 @@
 ﻿using System.Data.SqlClient;
-using System.Text;
 using Dapper;
 using Microsoft.Extensions.Logging;
 using SqlAnalysis.Features.Profiler.Models;
@@ -8,23 +7,23 @@ using SqlAnalysis.Services;
 
 namespace SqlAnalysis.Features.Profiler
 {
-    public class ProfilerVerb
+    public class ProfilerReferencesVerb
     {
         private const string ConnectionStringEnvironmentVariable = "SQL_PROFILE_DB";
-        private readonly ILogger<ProfilerVerb> _logger;
+        private readonly ILogger<ProfilerReferencesVerb> _logger;
         private readonly ISqlParser _sqlParser;
 
-        public ProfilerVerb(ISqlParser sqlParser, ILogger<ProfilerVerb> logger)
+        public ProfilerReferencesVerb(ISqlParser sqlParser, ILogger<ProfilerReferencesVerb> logger)
         {
             _sqlParser = sqlParser;
             _logger = logger;
         }
 
-        public async Task Run(ProfilerOptions options)
+        public async Task Run(ProfilerReferencesOptions referencesOptions)
         {
             try
             {
-                var profileData = GetProfileData(options);
+                var profileData = GetProfileData(referencesOptions);
 
                 foreach (var row in profileData)
                 {
@@ -39,13 +38,13 @@ namespace SqlAnalysis.Features.Profiler
                     var tableNames = _sqlParser.TableNames(sqlToParse);
                     if (tableNames.Any())
                     {
-                        Console.WriteLine(NamesToString(sqlToParse, tableNames, "Table"));
+                        Console.WriteLine(SqlHelpers.NamesToString(sqlToParse, tableNames, "Table"));
                     }
 
                     var spNames = _sqlParser.StoredProcedureNames(sqlToParse);
                     if (spNames.Any())
                     {
-                        Console.WriteLine(NamesToString(sqlToParse, spNames, "Stored Procedure"));
+                        Console.WriteLine(SqlHelpers.NamesToString(sqlToParse, spNames, "Stored Procedure"));
                     }
                 }
             }
@@ -54,26 +53,6 @@ namespace SqlAnalysis.Features.Profiler
             {
                 _logger.LogError($"{exception}");
             }
-        }
-
-        private static string NamesToString(string sqlToParse, List<string> names, string prefix = "Unknown Prefix")
-        {
-            var strBuilder = new StringBuilder();
-
-            strBuilder.Append($"SQL: {sqlToParse}");
-            strBuilder.AppendLine();
-            strBuilder.AppendLine();
-            if (!names.Any())
-            {
-                return strBuilder.ToString();
-            }
-
-            foreach (var name in names)
-            {
-                strBuilder.Append($"{prefix}: {name}\n");
-            }
-
-            return strBuilder.ToString();
         }
 
         /// <summary>
@@ -105,9 +84,9 @@ namespace SqlAnalysis.Features.Profiler
         /// <summary>
         ///     Pulls the sql profiler data back from a database table
         /// </summary>
-        /// <param name="options"></param>
+        /// <param name="referencesOptions"></param>
         /// <returns></returns>
-        private List<SqlProfileData> GetProfileData(ProfilerOptions options)
+        private List<SqlProfileData> GetProfileData(ProfilerReferencesOptions referencesOptions)
         {
             var connectionString = Environment.GetEnvironmentVariable(ConnectionStringEnvironmentVariable);
 
@@ -119,7 +98,7 @@ namespace SqlAnalysis.Features.Profiler
 
             using var connection = new SqlConnection(connectionString);
 
-            var sql = $"SELECT * FROM [{options.TableName}]";
+            var sql = $"SELECT * FROM [{referencesOptions.TableName}]";
 
             var profileData = connection.Query<SqlProfileData>(sql).ToList();
             return profileData;

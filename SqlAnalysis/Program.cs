@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 using SqlAnalysis.Features.Profiler;
+using SqlAnalysis.Features.RawSql;
 
 namespace SqlAnalysis
 {
@@ -28,11 +29,17 @@ namespace SqlAnalysis
         {
             Parser.Default
                 .ParseArguments<
-                    ProfilerOptions
+                    ProfilerReferencesOptions,
+                    SqlFileReferencesOptions
                 >(args)
-                .WithParsed(options =>
+                .WithParsed<ProfilerReferencesOptions>(options =>
                 {
-                    var verb = s_serviceProvider?.GetService<ProfilerVerb>();
+                    var verb = s_serviceProvider?.GetService<ProfilerReferencesVerb>();
+                    verb?.Run(options).Wait();
+                })
+                .WithParsed<SqlFileReferencesOptions>(options =>
+                {
+                    var verb = s_serviceProvider?.GetService<SqlFileReferencesVerb>();
                     verb?.Run(options).Wait();
                 })
                 ;

@@ -2,8 +2,8 @@
 
 namespace SqlAnalysis.Features.Profiler
 {
-    [Verb("Profiler", HelpText = "Read profiler data from database")]
-    public class ProfilerOptions
+    [Verb("ProfilerReferences", HelpText = "Read profiler data from database")]
+    public class ProfilerReferencesOptions
     {
         [Option('t', nameof(TableName), Required = true, HelpText = "Table where queries are recorded")]
         public string TableName { get; set; } = null!;

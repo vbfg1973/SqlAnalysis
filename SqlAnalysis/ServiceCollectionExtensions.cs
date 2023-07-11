@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using SqlAnalysis.Features.Profiler;
+using SqlAnalysis.Features.RawSql;
 using SqlAnalysis.Services;
 
 namespace SqlAnalysis
@@ -9,7 +10,8 @@ namespace SqlAnalysis
         public static void AddVerbs(this IServiceCollection? serviceCollection)
         {
             serviceCollection?
-                .AddTransient<ProfilerVerb>()
+                .AddTransient<ProfilerReferencesVerb>()
+                .AddTransient<SqlFileReferencesVerb>()
                 ;
         }
         
