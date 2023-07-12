@@ -17,16 +17,57 @@ namespace SqlAnalysis.Features.References.SqlFileReferences
 
         public async Task Run(SqlFileReferencesOptions referencesOptions)
         {
-            if (!File.Exists(referencesOptions.Path))
+            List<ReferenceDto> discoveredReferences = new();
+            if (!string.IsNullOrEmpty(referencesOptions.File))
             {
-                throw new ArgumentException("File does not exist", referencesOptions.Path);
+                if (!File.Exists(referencesOptions.File))
+                {
+                    throw new ArgumentException("File does not exist", referencesOptions.File);
+                }
+
+
+                discoveredReferences.AddRange(await GetReferencesFromFile(referencesOptions.File));
             }
 
-            var sqlText = await File.ReadAllTextAsync(referencesOptions.Path);
-            var discoveredReferences = GetReferences(sqlText, referencesOptions.Path);
+            else if (!string.IsNullOrEmpty(referencesOptions.Dir))
+            {
+                if (!Directory.Exists(referencesOptions.Dir))
+                {
+                    throw new ArgumentException("Directory does not exist", referencesOptions.Dir);
+                }
+
+
+                discoveredReferences.AddRange(await GetReferencesFromDir(referencesOptions.Dir));
+            }
+
+            else
+            {
+                throw new ArgumentException("Must specify either file or directory");
+            }
 
             CsvHelpers.Write(referencesOptions.OutputCsv, discoveredReferences);
-            await Console.Error.WriteLineAsync($"The Id column refers to the file the reference was extracted from");
+            await Console.Error.WriteLineAsync("The Id column refers to the file the reference was extracted from");
+        }
+
+        private async Task<List<ReferenceDto>> GetReferencesFromDir(string dirPath)
+        {
+            List<ReferenceDto> references = new();
+
+            var files = Directory.EnumerateFiles(dirPath, "*.sql", SearchOption.AllDirectories);
+
+            foreach (var file in files)
+            {
+                await Console.Error.WriteLineAsync(file);
+                references.AddRange(await GetReferencesFromFile(file));
+            }
+
+            return references;
+        }
+
+        private async Task<List<ReferenceDto>> GetReferencesFromFile(string filePath)
+        {
+            var sqlText = await File.ReadAllTextAsync(filePath);
+            return GetReferences(sqlText, filePath);
         }
 
         private List<ReferenceDto> GetReferences(string sqlText, string identifier)
