@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using SqlAnalysis.Features.ProfilerReferences;
-using SqlAnalysis.Features.SqlFileReferences;
+using SqlAnalysis.Features.References.ProfilerReferences;
+using SqlAnalysis.Features.References.SqlFileReferences;
 using SqlAnalysis.Services;
 
 namespace SqlAnalysis

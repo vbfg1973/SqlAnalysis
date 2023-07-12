@@ -1,11 +1,11 @@
 ﻿using System.Data.SqlClient;
 using Dapper;
 using Microsoft.Extensions.Logging;
-using SqlAnalysis.Features.ProfilerReferences.Models;
+using SqlAnalysis.Features.References.ProfilerReferences.Models;
 using SqlAnalysis.Helpers;
 using SqlAnalysis.Services;
 
-namespace SqlAnalysis.Features.ProfilerReferences
+namespace SqlAnalysis.Features.References.ProfilerReferences
 {
     public class ProfilerReferencesVerb
     {
@@ -25,6 +25,8 @@ namespace SqlAnalysis.Features.ProfilerReferences
             {
                 var profileData = GetProfileData(referencesOptions);
 
+                var discoveredReferences = new List<ReferenceDto>();
+
                 foreach (var row in profileData)
                 {
                     if (string.IsNullOrEmpty(row.TextData) || row.TextData.StartsWith("exec sp_reset_connection",
@@ -33,20 +35,12 @@ namespace SqlAnalysis.Features.ProfilerReferences
                         continue;
                     }
 
-                    var sqlToParse = GetSqlToParse(row);
+                    var sqlText = GetSqlToParse(row);
 
-                    var tableNames = _sqlParser.TableNames(sqlToParse);
-                    if (tableNames.Any())
-                    {
-                        Console.WriteLine(SqlHelpers.NamesToString(sqlToParse, tableNames, "Table"));
-                    }
-
-                    var spNames = _sqlParser.StoredProcedureNames(sqlToParse);
-                    if (spNames.Any())
-                    {
-                        Console.WriteLine(SqlHelpers.NamesToString(sqlToParse, spNames, "Stored Procedure"));
-                    }
+                    discoveredReferences.AddRange(GetReferences(sqlText, row.RowNumber.ToString()));
                 }
+
+                CsvHelpers.Write(referencesOptions.OutputCsv, discoveredReferences);
             }
 
             catch (Exception exception)
@@ -55,8 +49,39 @@ namespace SqlAnalysis.Features.ProfilerReferences
             }
         }
 
+        private List<ReferenceDto> GetReferences(string sqlText, string identifier)
+        {
+            var discoveredReferences = new List<ReferenceDto>();
+
+            discoveredReferences.AddRange(
+                _sqlParser
+                    .StoredProcedureNames(sqlText)
+                    .Select(sp => new ReferenceDto
+                    {
+                        Id = identifier,
+                        Name = sp,
+                        ReferenceType = ReferenceType.StoredProcedure
+                    })
+            );
+
+
+            discoveredReferences.AddRange(
+                _sqlParser
+                    .TableNames(sqlText)
+                    .Select(sp => new ReferenceDto
+                    {
+                        Id = identifier,
+                        Name = sp,
+                        ReferenceType = ReferenceType.Table
+                    })
+            );
+
+            return discoveredReferences;
+        }
+
         /// <summary>
-        ///     Extracts sql to parse. Likely just returns the original string but in the case of an sp_executesql stored procedure call (NHibernate and the like) will extract the query
+        ///     Extracts sql to parse. Likely just returns the original string but in the case of an sp_executesql stored procedure
+        ///     call (NHibernate and the like) will extract the query
         /// </summary>
         /// <param name="row"></param>
         /// <returns></returns>

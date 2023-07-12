@@ -2,8 +2,8 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
-using SqlAnalysis.Features.ProfilerReferences;
-using SqlAnalysis.Features.SqlFileReferences;
+using SqlAnalysis.Features.References.ProfilerReferences;
+using SqlAnalysis.Features.References.SqlFileReferences;
 
 namespace SqlAnalysis
 {

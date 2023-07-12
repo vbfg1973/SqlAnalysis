@@ -1,4 +1,4 @@
-﻿namespace SqlAnalysis.Features.ProfilerReferences.Models
+﻿namespace SqlAnalysis.Features.References.ProfilerReferences.Models
 {
     public class SqlProfileData
     {
