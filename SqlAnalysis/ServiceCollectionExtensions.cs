@@ -14,7 +14,7 @@ namespace SqlAnalysis
                 .AddTransient<SqlFileReferencesVerb>()
                 ;
         }
-        
+
         public static void AddSqlParsingTools(this IServiceCollection? serviceCollection)
         {
             serviceCollection?

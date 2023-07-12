@@ -31,7 +31,7 @@ Run:
 
 This will list all the options with which this specific verb can be invoked, noting which are required.
 
-## Output
+### Output
 
 The output CSV Will have the columns:
 
@@ -41,9 +41,11 @@ Name will be the name of the reference found.
 
 ReferenceType will be the type of reference, currently limited to Table or StoredProcedure
 
-Id will depend on the type of source analysed.
+Id will depend on the type of source analysed, but at present is either the row number from the table SQL Profiler dumps its output to or the file name containing the SQL
 
-## Profiler References
+## Verbs
+
+### Profiler References
 
 Parses queries recorded by the SQL Profiler that have been dumped to a table. 
 
@@ -53,7 +55,7 @@ For this to run you will need a connection string in an environment variable cal
 
 In the output CSV, Id will be the RowNumber of the table that SQL Profiler dumped the recorded queries to. Where there are multiple rows with the same Id, then the references were discovered in the same query.
 
-## SQL FIle references
+### SQL FIle references
 
 Analyse a specific file:
 
